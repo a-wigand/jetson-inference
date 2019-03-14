@@ -24,17 +24,36 @@
 #include "loadImage.h"
 
 #include "cudaMappedMemory.h"
+#include "cudaNormalize.h"
+#include "cudaFont.h"
 
+#include "gstCamera.h"
+#include "glDisplay.h"
+#include "glTexture.h"
 
 #include <sys/time.h>
+#include <stdio.h>
+#include <signal.h>
+#include <unistd.h>
 
+#define DEFAULT_CAMERA 0 
+
+bool signal_recieved = false;
+
+void sig_handler(int signo)
+{
+        if( signo == SIGINT )
+        {
+                printf("received SIGINT\n");
+                signal_recieved = true;
+        }
+}
 
 uint64_t current_timestamp() {
     struct timeval te; 
     gettimeofday(&te, NULL); // get current time
     return te.tv_sec*1000LL + te.tv_usec/1000; // caculate milliseconds
 }
-
 
 // main entry point
 int main( int argc, char** argv )
@@ -46,16 +65,27 @@ int main( int argc, char** argv )
 		
 	printf("\n\n");
 	
-	
-	// retrieve filename argument
-	if( argc < 2 )
-	{
-		printf("detectnet-zed:   input image filename required\n");
-		return 0;
-	}
+        if( signal(SIGINT, sig_handler) == SIG_ERR )
+                printf("\ncan't catch SIGINT\n");
 	
 	const char* imgFilename = argv[1];
-	
+
+        /*
+         * create the camera device
+         */
+        gstCamera* camera = gstCamera::Create(DEFAULT_CAMERA);
+
+        if( !camera )
+        {
+                printf("\ndetectnet-zed:  failed to initialize video device\n");
+                return 0;
+        }
+
+        printf("\ndetectnet-zed:  successfully initialized video device\n");
+        printf("    width:  %u\n", camera->GetWidth());
+        printf("   height:  %u\n", camera->GetHeight());
+        printf("    depth:  %u (bpp)\n\n", camera->GetPixelDepth());
+
 
 	// create detectNet
 	detectNet* net = detectNet::Create(argc, argv);
@@ -66,7 +96,7 @@ int main( int argc, char** argv )
 		return 0;
 	}
 
-	net->EnableProfiler();
+	// net->EnableProfiler();
 	
 	// alloc memory for bounding box & confidence value output arrays
 	const uint32_t maxBoxes = net->GetMaxBoundingBoxes();
@@ -84,6 +114,53 @@ int main( int argc, char** argv )
 		return 0;
 	}
 	
+        /*
+         * create openGL texture
+         */
+        glTexture* texture = NULL;
+
+        // texture = glTexture::Create(camera->GetWidth(), camera->GetHeight(), GL_RGBA32F_ARB/*GL_RGBA8*/);
+
+        if( !texture )
+                printf("detectnet-zed:  failed to create openGL texture\n");
+
+        /*
+         * create font
+         */
+        cudaFont* font = cudaFont::Create();
+
+        /*
+         * start camera
+         */
+        if( !camera->Open() )
+        {
+                printf("\ndetectnet-zed:  failed to start camera\n");
+                return 0;
+        }
+
+        printf("\ndetectnet-zed:  camera started\n");
+
+        float confidence = 0.0f;
+
+	if( !signal_recieved )
+	{
+                void* imgCPU  = NULL;
+                void* imgCUDA = NULL;
+
+                // get the latest frame
+                if( !camera->Capture(&imgCPU, &imgCUDA, 1000) )
+                        printf("\ndetectnet-camera:  failed to capture frame\n");
+
+                // convert from YUV to RGBA
+                void* imgRGBA = NULL;
+
+                if( !camera->ConvertRGBA(imgCUDA, &imgRGBA) )
+                        printf("detectnet-camera:  failed to convert from NV12 to RGBA\n");
+
+                // classify image with detectNet
+                int numBoundingBoxes = maxBoxes;
+	}
+
 	// load image from file on disk
 	float* imgCPU    = NULL;
 	float* imgCUDA   = NULL;
@@ -144,7 +221,17 @@ int main( int argc, char** argv )
 		
 	}
 	//printf("detectnet-console:  '%s' -> %2.5f%% class #%i (%s)\n", imgFilename, confidence * 100.0f, img_class, "pedestrian");
-	
+
+        /*
+         * shutdown the camera device
+         */
+        if( camera != NULL )
+        {
+                delete camera;
+                camera = NULL;
+        }
+
+	printf("Debug: Make successful!");
 	printf("\nshutting down...\n");
 	CUDA(cudaFreeHost(imgCPU));
 	delete net;
