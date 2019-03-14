@@ -3,13 +3,13 @@ cmake_minimum_required(VERSION 2.8)
 project(jetson-inference)
 
 # submodule warning
-message(" ")
-message("Note:  this project uses git submodules in the source tree.")
-message("       if you haven't already, run the following command from")
-message("       the project's root directory:")
-message(" ")
-message("           git submodule update --init") 
-message("\n")
+# message(" ")
+# message("Note:  this project uses git submodules in the source tree.")
+# message("       if you haven't already, run the following command from")
+# message("       the project's root directory:")
+# message(" ")
+# message("           git submodule update --init") 
+# message("\n")
 
 if( NOT EXISTS "${PROJECT_SOURCE_DIR}/utils/.git" )
 	message("Note:  required git submodules have not been detected.")
@@ -119,14 +119,14 @@ file(COPY "tools/segnet-batch.sh" DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 
 # build samples & utilities
-add_subdirectory(imagenet-console)
-add_subdirectory(imagenet-camera)
+# add_subdirectory(imagenet-console)
+# add_subdirectory(imagenet-camera)
 
 add_subdirectory(detectnet-console)
 add_subdirectory(detectnet-camera)
 
-add_subdirectory(segnet-console)
-add_subdirectory(segnet-camera)
+# add_subdirectory(segnet-console)
+# add_subdirectory(segnet-camera)
 
 add_subdirectory(trt-bench)
 add_subdirectory(trt-console)
@@ -139,10 +139,10 @@ target_link_libraries(jetson-inference jetson-utils nvinfer nvcaffe_parser)
 if(CUDA_VERSION_MAJOR GREATER 9)
 	target_link_libraries(jetson-inference nvonnxparser opencv_core opencv_calib3d)
 
-	add_subdirectory(homography-console)
-	add_subdirectory(homography-camera)
+#	add_subdirectory(homography-console)
+#	add_subdirectory(homography-camera)
 
-	add_subdirectory(superres-console)
+#	add_subdirectory(superres-console)
 endif()
 
 
