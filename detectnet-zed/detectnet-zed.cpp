@@ -232,11 +232,12 @@ int main( int argc, char** argv )
 		
 //                if( !saveImageRGBA(argv[2], (float4*)imgCPU, imgWidth, imgHeight, 255.0f) )
 		// should be imgRGBA
-		if( !saveImageRGBA(argv[2], (float4*)imgCPU, camera->GetWidth(), camera->GetHeight(), 255.0f) )
-			printf("detectnet-zed:  failed saving %ix%i image to '%s'\n", camera->GetWidth(), camera->GetHeight(), argv[2]);
-		else	
-			printf("detectnet-zed:  successfully wrote %ix%i image to '%s'\n", camera->GetWidth(), camera->GetHeight(), argv[2]);
-		
+//		if( !saveImageRGBA(argv[2], (float4*)imgCPU, camera->GetWidth(), camera->GetHeight(), 255.0f) )
+//			printf("detectnet-zed:  failed saving %ix%i image to '%s'\n", camera->GetWidth(), camera->GetHeight(), argv[2]);
+//		else	
+//			printf("detectnet-zed:  successfully wrote %ix%i image to '%s'\n", camera->GetWidth(), camera->GetHeight(), argv[2]);
+	
+		printf("debug: size of imgCPU: '%lu'\n", sizeof(imgRGBA));
 	}
 	//printf("detectnet-console:  '%s' -> %2.5f%% class #%i (%s)\n", imgFilename, confidence * 100.0f, img_class, "pedestrian");
 
@@ -249,9 +250,8 @@ int main( int argc, char** argv )
                 camera = NULL;
         }
 
-	printf("Debug: Make successful!");
 	printf("\nshutting down...\n");
-	CUDA(cudaFreeHost(imgCPU));
+//	CUDA(cudaFreeHost(imgCPU));
 	delete net;
 	return 0;
 }
