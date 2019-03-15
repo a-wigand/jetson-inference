@@ -3,13 +3,13 @@ cmake_minimum_required(VERSION 2.8)
 project(jetson-inference)
 
 # submodule warning
-message(" ")
-message("Note:  this project uses git submodules in the source tree.")
-message("       if you haven't already, run the following command from")
-message("       the project's root directory:")
-message(" ")
-message("           git submodule update --init") 
-message("\n")
+# message(" ")
+# message("Note:  this project uses git submodules in the source tree.")
+# message("       if you haven't already, run the following command from")
+# message("       the project's root directory:")
+# message(" ")
+# message("           git submodule update --init") 
+# message("\n")
 
 if( NOT EXISTS "${PROJECT_SOURCE_DIR}/utils/.git" )
 	message("Note:  required git submodules have not been detected.")
@@ -60,6 +60,10 @@ if(CUDA_VERSION_MAJOR GREATER 9)
 		${CUDA_NVCC_FLAGS}; 
 		-gencode arch=compute_72,code=sm_72
 	)
+
+	# OpenCV used for findHomography() and decomposeHomography()
+	# OpenCV version >= 3.0.0 required for decomposeHomography()
+	find_package(OpenCV 3.0.0 COMPONENTS core calib3d REQUIRED)
 endif()
 
 
@@ -86,7 +90,7 @@ file(GLOB inferenceSources *.cpp *.cu calibration/*.cpp)
 file(GLOB inferenceIncludes *.h calibration/*.h)
 
 cuda_add_library(jetson-inference SHARED ${inferenceSources})
-target_link_libraries(jetson-inference nvcaffe_parser nvinfer)		# gstreamer-0.10 gstbase-0.10 gstapp-0.10 
+#target_link_libraries(jetson-inference nvcaffe_parser nvinfer)		# gstreamer-0.10 gstbase-0.10 gstapp-0.10 
 
 
 # transfer all headers to the include directory
@@ -115,14 +119,16 @@ file(COPY "tools/segnet-batch.sh" DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 
 # build samples & utilities
-add_subdirectory(imagenet-console)
-add_subdirectory(imagenet-camera)
+# add_subdirectory(imagenet-console)
+# add_subdirectory(imagenet-camera)
 
 add_subdirectory(detectnet-console)
 add_subdirectory(detectnet-camera)
 
-add_subdirectory(segnet-console)
-add_subdirectory(segnet-camera)
+add_subdirectory(detectnet-zed)
+
+# add_subdirectory(segnet-console)
+# add_subdirectory(segnet-camera)
 
 add_subdirectory(trt-bench)
 add_subdirectory(trt-console)
@@ -130,7 +136,16 @@ add_subdirectory(trt-console)
 add_subdirectory(docs)
 add_subdirectory(utils)
 
-target_link_libraries(jetson-inference jetson-utils)
+target_link_libraries(jetson-inference jetson-utils nvinfer nvcaffe_parser)
+
+if(CUDA_VERSION_MAJOR GREATER 9)
+	target_link_libraries(jetson-inference nvonnxparser opencv_core opencv_calib3d)
+
+#	add_subdirectory(homography-console)
+#	add_subdirectory(homography-camera)
+
+#	add_subdirectory(superres-console)
+endif()
 
 
 # install includes
