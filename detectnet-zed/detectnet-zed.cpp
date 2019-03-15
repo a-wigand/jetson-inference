@@ -28,6 +28,8 @@
 #include <stdio.h>
 #include <signal.h>
 #include <unistd.h>
+#include <time.h>
+#include <chrono>
 
 #include "cudaMappedMemory.h"
 #include "cudaNormalize.h"
@@ -163,14 +165,16 @@ int main( int argc, char** argv )
 		// classify image with detectNet
 		int numBoundingBoxes = maxBoxes;
 	
+		auto start = std::chrono::high_resolution_clock::now(); // start time measurement
+
 		if( net->Detect((float*)imgRGBA, camera->GetWidth(), camera->GetHeight(), bbCPU, &numBoundingBoxes, confCPU))
 		{
-//			for( int n=0; n < numBoundingBoxes; n++ )
-//			{
-//				printf("\33[2K\r");// %c[2K",27);
-//			}
+			// stop time measurement
+			auto stop = std::chrono::high_resolution_clock::now();
+	                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+			printf("\nDuration: %03ld ms ( %03ld FPS )\n\n",duration.count(),1000/duration.count());				
 
-			printf("\n%i bounding boxes detected\n", numBoundingBoxes);
+			printf("%i bounding boxes detected\n", numBoundingBoxes);
 		
 			int lastClass = 0;
 			int lastStart = 0;
@@ -197,6 +201,13 @@ int main( int argc, char** argv )
 				}
 			}
 		
+        	        for ( int k=0; k < numBoundingBoxes+4; k++ )
+	                {
+                	        printf("\033[2K"); // delete line
+        	                printf("\033[A"); // move up
+	                }
+			
+
 			/*if( font != NULL )
 			{
 				char str[256];
