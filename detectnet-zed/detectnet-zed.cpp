@@ -54,7 +54,7 @@ void sig_handler(int signo)
 
 int main( int argc, char** argv )
 {
-	printf("detectnet-camera\n  args (%i):  ", argc);
+	printf("detectnet-zed\n  args (%i):  ", argc);
 
 	for( int i=0; i < argc; i++ )
 		printf("%i [%s]  ", i, argv[i]);
@@ -71,11 +71,11 @@ int main( int argc, char** argv )
 	
 	if( !camera )
 	{
-		printf("\ndetectnet-camera:  failed to initialize video device\n");
+		printf("\ndetectnet-zed:  failed to initialize video device\n");
 		return 0;
 	}
 	
-	printf("\ndetectnet-camera:  successfully initialized video device\n");
+	printf("\ndetectnet-zed:  successfully initialized video device\n");
 	printf("    width:  %u\n", camera->GetWidth());
 	printf("   height:  %u\n", camera->GetHeight());
 	printf("    depth:  %u (bpp)\n\n", camera->GetPixelDepth());
@@ -87,7 +87,7 @@ int main( int argc, char** argv )
 	
 	if( !net )
 	{
-		printf("detectnet-camera:   failed to initialize imageNet\n");
+		printf("detectnet-zed:   failed to initialize imageNet\n");
 		return 0;
 	}
 
@@ -116,14 +116,14 @@ int main( int argc, char** argv )
 //	glTexture* texture = NULL;
 //	
 //	if( !display ) {
-//		printf("\ndetectnet-camera:  failed to create openGL display\n");
+//		printf("\ndetectnet-zed:  failed to create openGL display\n");
 //	}
 //	else
 //	{
 //		texture = glTexture::Create(camera->GetWidth(), camera->GetHeight(), GL_RGBA32F_ARB/*GL_RGBA8*/);
 //
 //		if( !texture )
-//			printf("detectnet-camera:  failed to create openGL texture\n");
+//			printf("detectnet-zed:  failed to create openGL texture\n");
 //	}
 	
 	/*
@@ -136,11 +136,11 @@ int main( int argc, char** argv )
 	 */
 	if( !camera->Open() )
 	{
-		printf("\ndetectnet-camera:  failed to open camera for streaming\n");
+		printf("\ndetectnet-zed:  failed to open camera for streaming\n");
 		return 0;
 	}
 	
-	printf("\ndetectnet-camera:  camera open for streaming\n");
+	printf("\ndetectnet-zed:  camera open for streaming\n");
 	
 	/*
 	 * processing loop
@@ -154,13 +154,13 @@ int main( int argc, char** argv )
 		
 		// get the latest frame
 		if( !camera->Capture(&imgCPU, &imgCUDA, 1000) )
-			printf("\ndetectnet-camera:  failed to capture frame\n");
+			printf("\ndetectnet-zed:  failed to capture frame\n");
 
 		// convert from YUV to RGBA
 		void* imgRGBA = NULL;
 		
 		if( !camera->ConvertRGBA(imgCUDA, &imgRGBA) )
-			printf("detectnet-camera:  failed to convert from NV12 to RGBA\n");
+			printf("detectnet-zed:  failed to convert from NV12 to RGBA\n");
 
 		// classify image with detectNet
 		int numBoundingBoxes = maxBoxes;
@@ -256,7 +256,7 @@ int main( int argc, char** argv )
 //		}
 	}
 	
-	printf("\ndetectnet-camera:  un-initializing video device\n");
+	printf("\ndetectnet-zed:  un-initializing video device\n");
 	
 	
 	/*
@@ -274,8 +274,8 @@ int main( int argc, char** argv )
 //		display = NULL;
 //	}
 	
-	printf("detectnet-camera:  video device has been un-initialized.\n");
-	printf("detectnet-camera:  this concludes the test of the video device.\n");
+	printf("detectnet-zed:  video device has been un-initialized.\n");
+	printf("detectnet-zed:  this concludes the test of the video device.\n");
 	return 0;
 }
 
