@@ -38,7 +38,7 @@
 #include "detectNet.h"
 
 #define ZED 42
-#define DEFAULT_CAMERA 1		
+#define DEFAULT_CAMERA 42 //1		
 
 bool signal_recieved = false;
 
@@ -172,6 +172,7 @@ int main( int argc, char** argv )
 			// stop time measurement
 			auto stop = std::chrono::high_resolution_clock::now();
 	                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+			printf("\nWidth: %i Height: %i \n", camera->GetWidth(), camera->GetHeight() );
 			printf("\nDuration: %03ld ms ( %03ld FPS )\n\n",duration.count(),1000/duration.count());				
 
 			printf("%i bounding boxes detected\n", numBoundingBoxes);
@@ -201,7 +202,7 @@ int main( int argc, char** argv )
 				}
 			}
 		
-        	        for ( int k=0; k < numBoundingBoxes+4; k++ )
+        	        for ( int k=0; k < numBoundingBoxes+6; k++ )
 	                {
                 	        printf("\033[2K"); // delete line
         	                printf("\033[A"); // move up
@@ -224,6 +225,8 @@ int main( int argc, char** argv )
 //				display->SetTitle(str);	
 //			}	
 		}	
+
+//		printf("Chance to print summary");
 
 
 		// update display
